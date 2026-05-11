@@ -95,7 +95,7 @@ export default function NewtonVisualizer() {
     }
   };
 
-  const currentStep = currentStepIndex >= 0 ? steps[currentStepIndex] : null;
+  const currentStep = currentStepIndex >= 0 && currentStepIndex < steps.length ? steps[currentStepIndex] : null;
   const isFinished = currentStepIndex === steps.length - 1;
 
   return (
@@ -144,7 +144,7 @@ export default function NewtonVisualizer() {
       <div className="right-panel panel">
         <h3>Calculs Détaillés</h3>
         
-        {currentStepIndex === -1 ? (
+        {!currentStep ? (
           <div className="step-details step-details-animated" key="init">
             <p><strong>Initialisation</strong></p>
             <p>Nous commençons avec la valeur initiale :</p>
@@ -180,16 +180,16 @@ export default function NewtonVisualizer() {
 
                 <p>Calcul du point suivant :</p>
                 <div className="math-block">
-                  x<sub>{currentStep!.n + 1}</sub> = x<sub>{currentStep?.n}</sub> - f(x<sub>{currentStep?.n}</sub>) / f'(x<sub>{currentStep?.n}</sub>)
+                  x<sub>{currentStep.n + 1}</sub> = x<sub>{currentStep.n}</sub> - f(x<sub>{currentStep.n}</sub>) / f'(x<sub>{currentStep.n}</sub>)
                   <br/><br/>
-                  x<sub>{currentStep!.n + 1}</sub> = {currentStep?.xn.toFixed(4)} - ({currentStep?.fxn.toFixed(4)} / {currentStep?.dfxn.toFixed(4)})
+                  x<sub>{currentStep.n + 1}</sub> = {currentStep.xn.toFixed(4)} - ({currentStep.fxn.toFixed(4)} / {currentStep.dfxn.toFixed(4)})
                   <br/><br/>
-                  <strong>x<sub>{currentStep!.n + 1}</sub> = {currentStep?.xNext.toFixed(6)}</strong>
+                  <strong>x<sub>{currentStep.n + 1}</sub> = {currentStep.xNext.toFixed(6)}</strong>
                 </div>
 
                 <p>Erreur relative :</p>
                 <div className="math-block">
-                  ε = |x<sub>{currentStep!.n + 1}</sub> - x<sub>{currentStep?.n}</sub>| / |x<sub>{currentStep?.n}</sub>|
+                  ε = |x<sub>{currentStep.n + 1}</sub> - x<sub>{currentStep.n}</sub>| / |x<sub>{currentStep.n}</sub>|
                   <br/>
                   ε = {currentStep?.error.toExponential(4)}
                 </div>
