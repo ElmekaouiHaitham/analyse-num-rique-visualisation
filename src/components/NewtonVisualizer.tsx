@@ -145,7 +145,7 @@ export default function NewtonVisualizer() {
         <h3>Calculs Détaillés</h3>
         
         {currentStepIndex === -1 ? (
-          <div className="step-details step-details-content" key="init">
+          <div className="step-details">
             <p><strong>Initialisation</strong></p>
             <p>Nous commençons avec la valeur initiale :</p>
             <div className="math-block">
@@ -154,7 +154,7 @@ export default function NewtonVisualizer() {
             <p>Cliquez sur "Suivant" pour calculer la première itération de la méthode de Newton.</p>
           </div>
         ) : (
-          <div className="step-details step-details-content" key={`step-${currentStep?.n}`}>
+          <div className="step-details">
             <p><strong>Itération n = {currentStep?.n}</strong></p>
             
             {currentStep?.isDivergent ? (
@@ -195,14 +195,14 @@ export default function NewtonVisualizer() {
                 </div>
 
                 {currentStep?.isRoot && (
-                  <div className="success-message">
+                  <div>
                     <strong>Convergence atteinte !</strong> L'erreur est inférieure à la tolérance de {tolerance}.<br/>
                     La racine est approximativement <strong>{currentStep?.xNext.toFixed(6)}</strong>.
                   </div>
                 )}
                 
                 {isFinished && !currentStep?.isRoot && !currentStep?.isDivergent && (
-                  <div className="error-message">
+                  <div>
                     <strong>Non convergence :</strong> Le nombre maximum d'itérations a été atteint sans converger.
                   </div>
                 )}

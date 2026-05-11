@@ -32,14 +32,12 @@ export default function GraphingTool({ functionStr = "Math.sin(x)", currentStep,
   const isDragging = useRef(false);
   const lastMouse = useRef({ x: 0, y: 0 });
 
-  // Auto-center on initial load or step change
+  // Auto-center only when initialX changes
   useEffect(() => {
-    if (currentStep) {
-        setCenter({ x: currentStep.xn, y: 0 });
-    } else if (initialX !== undefined) {
+    if (initialX !== undefined && !currentStep) {
         setCenter({ x: initialX, y: 0 });
     }
-  }, [currentStep, initialX]);
+  }, [initialX]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -47,178 +45,240 @@ export default function GraphingTool({ functionStr = "Math.sin(x)", currentStep,
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
+    let animationFrameId: number;
+    let startTime: number | null = null;
+    const animationDuration = 800; // ms
 
-    const width = rect.width;
-    const height = rect.height;
+    const draw = (progress: number) => {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      
+      // Reset transform before scaling to avoid cumulative scaling
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.scale(dpr, dpr);
 
-    const unitsPerHeight = unitsPerWidth * (height / width);
+      const width = rect.width;
+      const height = rect.height;
 
-    const minX = center.x - unitsPerWidth / 2;
-    const maxX = center.x + unitsPerWidth / 2;
-    const minY = center.y - unitsPerHeight / 2;
-    const maxY = center.y + unitsPerHeight / 2;
+      const unitsPerHeight = unitsPerWidth * (height / width);
 
-    const scaleX = width / (maxX - minX);
-    const scaleY = height / (maxY - minY);
+      const minX = center.x - unitsPerWidth / 2;
+      const maxX = center.x + unitsPerWidth / 2;
+      const minY = center.y - unitsPerHeight / 2;
+      const maxY = center.y + unitsPerHeight / 2;
 
-    const originX = -minX * scaleX;
-    const originY = maxY * scaleY;
+      const scaleX = width / (maxX - minX);
+      const scaleY = height / (maxY - minY);
 
-    // Helper to map graph coords to pixel coords
-    const getPx = (x: number) => originX + x * scaleX;
-    const getPy = (y: number) => originY - y * scaleY;
+      const originX = -minX * scaleX;
+      const originY = maxY * scaleY;
 
-    ctx.clearRect(0, 0, width, height);
+      const getPx = (x: number) => originX + x * scaleX;
+      const getPy = (y: number) => originY - y * scaleY;
 
-    // Adaptive Grid
-    const idealStep = unitsPerWidth / 10;
-    const magnitude = Math.pow(10, Math.floor(Math.log10(idealStep)));
-    let gridStep = magnitude;
-    if (idealStep / magnitude > 5) gridStep = 5 * magnitude;
-    else if (idealStep / magnitude > 2) gridStep = 2 * magnitude;
-    
-    const subGridStep = gridStep / 5;
+      ctx.clearRect(0, 0, width, height);
 
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.03)";
-    ctx.lineWidth = 1;
-    for (let x = Math.ceil(minX / subGridStep) * subGridStep; x <= maxX; x += subGridStep) {
-      ctx.beginPath(); ctx.moveTo(getPx(x), 0); ctx.lineTo(getPx(x), height); ctx.stroke();
-    }
-    for (let y = Math.ceil(minY / subGridStep) * subGridStep; y <= maxY; y += subGridStep) {
-      ctx.beginPath(); ctx.moveTo(0, getPy(y)); ctx.lineTo(width, getPy(y)); ctx.stroke();
-    }
+      // Adaptive Grid
+      const idealStep = unitsPerWidth / 10;
+      const magnitude = Math.pow(10, Math.floor(Math.log10(idealStep)));
+      let gridStep = magnitude;
+      if (idealStep / magnitude > 5) gridStep = 5 * magnitude;
+      else if (idealStep / magnitude > 2) gridStep = 2 * magnitude;
+      
+      const subGridStep = gridStep / 5;
 
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.15)";
-    ctx.lineWidth = 1;
-    for (let x = Math.ceil(minX / gridStep) * gridStep; x <= maxX; x += gridStep) {
-      ctx.beginPath(); ctx.moveTo(getPx(x), 0); ctx.lineTo(getPx(x), height); ctx.stroke();
-    }
-    for (let y = Math.ceil(minY / gridStep) * gridStep; y <= maxY; y += gridStep) {
-      ctx.beginPath(); ctx.moveTo(0, getPy(y)); ctx.lineTo(width, getPy(y)); ctx.stroke();
-    }
-
-    // Draw Axes
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
-    ctx.lineWidth = 2;
-    if (originY >= 0 && originY <= height) {
-      ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(width, originY); ctx.stroke();
-    }
-    if (originX >= 0 && originX <= width) {
-      ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, height); ctx.stroke();
-    }
-
-    // Compile Function
-    let fn: (x: number) => number;
-    try {
-      // eslint-disable-next-line no-new-func
-      fn = new Function("Math", "x", `return ${functionStr};`).bind(null, Math) as (x: number) => number;
-      fn(0);
-      setError(null);
-    } catch (e) {
-      setError("Expression invalide.");
-      return;
-    }
-
-    // Draw Function
-    ctx.strokeStyle = '#2563eb';
-    ctx.lineWidth = 3;
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-
-    let firstPoint = true;
-    const step = (maxX - minX) / width;
-
-    for (let i = 0; i <= width; i++) {
-      const x = minX + i * step;
-      try {
-        const y = fn(x);
-        if (typeof y !== 'number' || isNaN(y) || !isFinite(y)) {
-            firstPoint = true;
-            continue;
-        }
-
-        const px = getPx(x);
-        const py = getPy(y);
-
-        if (py < -height || py > height * 2) {
-             firstPoint = true;
-             continue;
-        }
-
-        if (firstPoint) {
-          ctx.moveTo(px, py);
-          firstPoint = false;
-        } else {
-          ctx.lineTo(px, py);
-        }
-      } catch (e) {
-        firstPoint = true;
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.03)";
+      ctx.lineWidth = 1;
+      for (let x = Math.ceil(minX / subGridStep) * subGridStep; x <= maxX; x += subGridStep) {
+        ctx.beginPath(); ctx.moveTo(getPx(x), 0); ctx.lineTo(getPx(x), height); ctx.stroke();
       }
-    }
-    ctx.stroke();
+      for (let y = Math.ceil(minY / subGridStep) * subGridStep; y <= maxY; y += subGridStep) {
+        ctx.beginPath(); ctx.moveTo(0, getPy(y)); ctx.lineTo(width, getPy(y)); ctx.stroke();
+      }
 
-    // Draw Newton's Method Steps
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.15)";
+      ctx.lineWidth = 1;
+      for (let x = Math.ceil(minX / gridStep) * gridStep; x <= maxX; x += gridStep) {
+        ctx.beginPath(); ctx.moveTo(getPx(x), 0); ctx.lineTo(getPx(x), height); ctx.stroke();
+      }
+      for (let y = Math.ceil(minY / gridStep) * gridStep; y <= maxY; y += gridStep) {
+        ctx.beginPath(); ctx.moveTo(0, getPy(y)); ctx.lineTo(width, getPy(y)); ctx.stroke();
+      }
+
+      // Draw Axes
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.4)";
+      ctx.lineWidth = 2;
+      if (originY >= 0 && originY <= height) {
+        ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(width, originY); ctx.stroke();
+      }
+      if (originX >= 0 && originX <= width) {
+        ctx.beginPath(); ctx.moveTo(originX, 0); ctx.lineTo(originX, height); ctx.stroke();
+      }
+
+      // Compile Function
+      let fn: (x: number) => number;
+      try {
+        // eslint-disable-next-line no-new-func
+        fn = new Function("Math", "x", `return ${functionStr};`).bind(null, Math) as (x: number) => number;
+        fn(0);
+        setError(null);
+      } catch (e) {
+        setError("Expression invalide.");
+        return;
+      }
+
+      // Draw Function
+      const style = getComputedStyle(document.body);
+      ctx.strokeStyle = style.getPropertyValue('--accent-color') || '#2563eb';
+      ctx.lineWidth = 3;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+
+      let firstPoint = true;
+      const step = (maxX - minX) / width;
+
+      for (let i = 0; i <= width; i++) {
+        const x = minX + i * step;
+        try {
+          const y = fn(x);
+          if (typeof y !== 'number' || isNaN(y) || !isFinite(y)) {
+              firstPoint = true;
+              continue;
+          }
+
+          const px = getPx(x);
+          const py = getPy(y);
+
+          if (py < -height || py > height * 2) {
+               firstPoint = true;
+               continue;
+          }
+
+          if (firstPoint) {
+            ctx.moveTo(px, py);
+            firstPoint = false;
+          } else {
+            ctx.lineTo(px, py);
+          }
+        } catch (e) {
+          firstPoint = true;
+        }
+      }
+      ctx.stroke();
+
+      // Draw Animated Newton's Method Steps
+      if (currentStep && !currentStep.isDivergent) {
+          const { xn, fxn, xNext } = currentStep;
+          let fxNext = 0;
+          try { fxNext = fn(xNext); } catch(e) {}
+
+          const drawVertical = (x: number, y0: number, y1: number, p: number) => {
+              if (p <= 0) return;
+              const currentY = y0 + (y1 - y0) * p;
+              ctx.beginPath();
+              ctx.moveTo(getPx(x), getPy(y0));
+              ctx.lineTo(getPx(x), getPy(currentY));
+              ctx.stroke();
+          };
+
+          const drawLine = (x0: number, y0: number, x1: number, y1: number, p: number) => {
+              if (p <= 0) return;
+              const currentX = x0 + (x1 - x0) * p;
+              const currentY = y0 + (y1 - y0) * p;
+              ctx.beginPath();
+              ctx.moveTo(getPx(x0), getPy(y0));
+              ctx.lineTo(getPx(currentX), getPy(currentY));
+              ctx.stroke();
+          };
+
+          const p1 = Math.min(Math.max(progress * 3, 0), 1);
+          const p2 = Math.min(Math.max((progress - 0.333) * 3, 0), 1);
+          const p3 = Math.min(Math.max((progress - 0.666) * 3, 0), 1);
+
+          ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+
+          // Phase 1: Vertical line up from x-axis to curve
+          drawVertical(xn, 0, fxn, p1);
+
+          // Phase 2: Tangent line down to xNext
+          if (p2 > 0) {
+              ctx.strokeStyle = '#ef4444'; // Red
+              ctx.lineWidth = 2;
+              drawLine(xn, fxn, xNext, 0, p2);
+              
+              ctx.fillStyle = '#ef4444';
+              ctx.beginPath();
+              ctx.arc(getPx(xn), getPy(fxn), 5, 0, 2 * Math.PI);
+              ctx.fill();
+          }
+
+          // Phase 3: Vertical line from xNext to curve for the next step
+          if (p3 > 0) {
+              ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+              ctx.lineWidth = 1;
+              drawVertical(xNext, 0, fxNext, p3);
+
+              ctx.fillStyle = '#10b981'; // Green
+              ctx.beginPath();
+              ctx.arc(getPx(xNext), getPy(0), 5, 0, 2 * Math.PI);
+              ctx.fill();
+              
+              if (p3 === 1) {
+                 ctx.fillStyle = '#3b82f6'; // Blue
+                 ctx.beginPath();
+                 ctx.arc(getPx(xNext), getPy(fxNext), 4, 0, 2 * Math.PI);
+                 ctx.fill();
+              }
+          }
+          ctx.setLineDash([]);
+      } else if (initialX !== undefined) {
+          // Just draw the starting point
+          let fx0 = 0;
+          try { fx0 = fn(initialX); } catch(e) {}
+          
+          ctx.fillStyle = '#10b981';
+          ctx.beginPath();
+          ctx.arc(getPx(initialX), getPy(fx0), 5, 0, 2 * Math.PI);
+          ctx.fill();
+          
+          ctx.strokeStyle = 'rgba(0,0,0,0.5)';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([4, 4]);
+          ctx.beginPath();
+          ctx.moveTo(getPx(initialX), getPy(0));
+          ctx.lineTo(getPx(initialX), getPy(fx0));
+          ctx.stroke();
+          ctx.setLineDash([]);
+      }
+    };
+
+    // Trigger animation loop if there is a current step, else just draw immediately
     if (currentStep && !currentStep.isDivergent) {
-        const { xn, fxn, xNext } = currentStep;
-
-        // 1. Draw point at (xn, fxn)
-        ctx.fillStyle = '#ef4444'; // Red
-        ctx.beginPath();
-        ctx.arc(getPx(xn), getPy(fxn), 5, 0, 2 * Math.PI);
-        ctx.fill();
-
-        // 2. Draw Tangent line from xn to xNext
-        ctx.strokeStyle = '#ef4444';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]);
-        ctx.beginPath();
-        ctx.moveTo(getPx(xn), getPy(fxn));
-        ctx.lineTo(getPx(xNext), getPy(0));
+      const animate = (time: number) => {
+        if (!startTime) startTime = time;
+        let p = (time - startTime) / animationDuration;
+        if (p >= 1) p = 1;
         
-        // Extend tangent a bit beyond xNext
-        const extendedDx = (xNext - xn) * 0.5;
-        ctx.lineTo(getPx(xNext + extendedDx), getPy(0 - currentStep.dfxn * extendedDx));
-        ctx.stroke();
-        ctx.setLineDash([]); // Reset
-
-        // 3. Draw vertical drop from (xn, fxn) to x-axis
-        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2, 2]);
-        ctx.beginPath();
-        ctx.moveTo(getPx(xn), getPy(fxn));
-        ctx.lineTo(getPx(xn), getPy(0));
-        ctx.stroke();
-
-        // 4. Mark xNext on the axis
-        ctx.fillStyle = '#10b981'; // Green
-        ctx.beginPath();
-        ctx.arc(getPx(xNext), getPy(0), 5, 0, 2 * Math.PI);
-        ctx.fill();
-    } else if (initialX !== undefined) {
-        // Draw just the initial point
-        const fx0 = fn(initialX);
-        ctx.fillStyle = '#10b981';
-        ctx.beginPath();
-        ctx.arc(getPx(initialX), getPy(fx0), 5, 0, 2 * Math.PI);
-        ctx.fill();
+        // ease-out cubic
+        const easeP = 1 - Math.pow(1 - p, 3);
+        draw(easeP);
         
-        // Vertical drop
-        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-        ctx.lineWidth = 1;
-        ctx.setLineDash([2, 2]);
-        ctx.beginPath();
-        ctx.moveTo(getPx(initialX), getPy(fx0));
-        ctx.lineTo(getPx(initialX), getPy(0));
-        ctx.stroke();
-        ctx.setLineDash([]);
+        if (p < 1) {
+          animationFrameId = requestAnimationFrame(animate);
+        }
+      };
+      animationFrameId = requestAnimationFrame(animate);
+    } else {
+      draw(1);
     }
 
+    return () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    };
   }, [functionStr, center, unitsPerWidth, currentStep, initialX]);
 
   // Event Handlers for Panning & Zooming
