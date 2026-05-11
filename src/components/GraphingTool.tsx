@@ -62,7 +62,8 @@ export default function GraphingTool({ functionStr = "Math.sin(x)", currentStep,
       const width = rect.width;
       const height = rect.height;
 
-      const unitsPerHeight = unitsPerWidth * (height / width);
+      const yAxisScaleRatio = 3;
+      const unitsPerHeight = unitsPerWidth * (height / width) * yAxisScaleRatio;
 
       const minX = center.x - unitsPerWidth / 2;
       const maxX = center.x + unitsPerWidth / 2;
@@ -297,11 +298,14 @@ export default function GraphingTool({ functionStr = "Math.sin(x)", currentStep,
     lastMouse.current = { x: e.clientX, y: e.clientY };
 
     const rect = canvas.getBoundingClientRect();
+    const yAxisScaleRatio = 3;
     const unitsPerPixelX = unitsPerWidth / rect.width;
+    const unitsPerHeight = unitsPerWidth * (rect.height / rect.width) * yAxisScaleRatio;
+    const unitsPerPixelY = unitsPerHeight / rect.height;
     
     setCenter(prev => ({
       x: prev.x - dx * unitsPerPixelX,
-      y: prev.y + dy * unitsPerPixelX,
+      y: prev.y + dy * unitsPerPixelY,
     }));
   };
 
@@ -316,18 +320,22 @@ export default function GraphingTool({ functionStr = "Math.sin(x)", currentStep,
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-    const unitsPerPixel = unitsPerWidth / rect.width;
     
-    const graphMouseX = center.x - (unitsPerWidth / 2) + (mouseX * unitsPerPixel);
-    const unitsPerHeight = unitsPerWidth * (rect.height / rect.width);
-    const graphMouseY = center.y + (unitsPerHeight / 2) - (mouseY * unitsPerPixel);
+    const yAxisScaleRatio = 3;
+    const unitsPerPixelX = unitsPerWidth / rect.width;
+    const unitsPerHeight = unitsPerWidth * (rect.height / rect.width) * yAxisScaleRatio;
+    const unitsPerPixelY = unitsPerHeight / rect.height;
+    
+    const graphMouseX = center.x - (unitsPerWidth / 2) + (mouseX * unitsPerPixelX);
+    const graphMouseY = center.y + (unitsPerHeight / 2) - (mouseY * unitsPerPixelY);
 
     const newUnitsPerWidth = unitsPerWidth * zoomFactor;
-    const newUnitsPerPixel = newUnitsPerWidth / rect.width;
+    const newUnitsPerPixelX = newUnitsPerWidth / rect.width;
+    const newUnitsPerHeight = newUnitsPerWidth * (rect.height / rect.width) * yAxisScaleRatio;
+    const newUnitsPerPixelY = newUnitsPerHeight / rect.height;
     
-    const newCenterX = graphMouseX + (newUnitsPerWidth / 2) - (mouseX * newUnitsPerPixel);
-    const newUnitsPerHeight = newUnitsPerWidth * (rect.height / rect.width);
-    const newCenterY = graphMouseY - (newUnitsPerHeight / 2) + (mouseY * newUnitsPerPixel);
+    const newCenterX = graphMouseX + (newUnitsPerWidth / 2) - (mouseX * newUnitsPerPixelX);
+    const newCenterY = graphMouseY - (newUnitsPerHeight / 2) + (mouseY * newUnitsPerPixelY);
 
     setUnitsPerWidth(newUnitsPerWidth);
     setCenter({ x: newCenterX, y: newCenterY });
