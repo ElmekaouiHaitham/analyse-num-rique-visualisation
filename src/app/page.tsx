@@ -19,13 +19,17 @@ export default function Home() {
         <div className="theoreme-box" style={{ width: "100%" }}>
           <h2>Théorème (Convergence de la méthode)</h2>
           <p>
-            Soit $f(x)$ une fonction continûment dérivable. En partant d'une approximation initiale $x_0$, la suite définie par la relation de récurrence :
+            Soit <i>f(x)</i> une fonction continûment dérivable. En partant d'une approximation initiale <i>x<sub>0</sub></i>, la suite définie par la relation de récurrence :
           </p>
-          <div style={{ textAlign: "center", margin: "1rem 0", fontSize: "1.2rem", fontWeight: "bold" }}>
-            {"$x_{n+1} = x_n - \\frac{f(x_n)}{f'(x_n)}$"}
+          <div className="math-fraction">
+            <span><i>x<sub>n+1</sub></i> = <i>x<sub>n</sub></i> - </span>
+            <span className="fraction">
+              <span className="numerator"><i>f(x<sub>n</sub>)</i></span>
+              <span className="denominator"><i>f'(x<sub>n</sub>)</i></span>
+            </span>
           </div>
           <p>
-            converge vers la racine de l'équation $f(x) = 0$ sous certaines conditions de régularité (notamment $f'(r) \neq 0$). Géométriquement, cela correspond à tracer la tangente à la courbe au point $(x_n, f(x_n))$ et à prendre l'intersection avec l'axe des abscisses pour le point suivant.
+            converge vers la racine de l'équation <i>f(x) = 0</i> sous certaines conditions de régularité (notamment <i>f'(r) ≠ 0</i>). Géométriquement, cela correspond à tracer la tangente à la courbe au point (<i>x<sub>n</sub>, f(x<sub>n</sub>)</i>) et à prendre l'intersection avec l'axe des abscisses pour le point suivant.
           </p>
         </div>
       </div>

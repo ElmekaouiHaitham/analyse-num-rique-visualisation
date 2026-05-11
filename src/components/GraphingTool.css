@@ -56,7 +56,8 @@
 
 .canvas-container {
   width: 100%;
-  aspect-ratio: 16/9;
+  aspect-ratio: 4/3;
+  min-height: 500px;
   background: #ffffff;
   border-radius: 8px;
   overflow: hidden;

@@ -97,3 +97,29 @@ a:hover {
   display: inline-block;
   padding-bottom: 0.25rem;
 }
+
+/* Math formatting */
+.math-fraction {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1.5rem 0;
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+.fraction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-left: 0.5rem;
+}
+
+.numerator {
+  border-bottom: 2px solid var(--purple-dark);
+  padding: 0 0.4rem;
+}
+
+.denominator {
+  padding: 0 0.4rem;
+}
