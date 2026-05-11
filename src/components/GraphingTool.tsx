@@ -82,13 +82,13 @@ export default function GraphingTool({ functionStr = "Math.sin(x)", currentStep,
       ctx.clearRect(0, 0, width, height);
 
       // Adaptive Grid
-      const idealStep = unitsPerWidth / 10;
+      const idealStep = unitsPerWidth / 5;
       const magnitude = Math.pow(10, Math.floor(Math.log10(idealStep)));
       let gridStep = magnitude;
       if (idealStep / magnitude > 5) gridStep = 5 * magnitude;
       else if (idealStep / magnitude > 2) gridStep = 2 * magnitude;
       
-      const subGridStep = gridStep / 5;
+      const subGridStep = gridStep / 2; // Reduce subgrids from 5 to 2 to minimize visual clutter
 
       ctx.strokeStyle = "rgba(0, 0, 0, 0.03)";
       ctx.lineWidth = 1;
