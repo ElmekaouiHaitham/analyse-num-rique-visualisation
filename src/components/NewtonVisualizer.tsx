@@ -145,7 +145,7 @@ export default function NewtonVisualizer() {
         <h3>Calculs Détaillés</h3>
         
         {currentStepIndex === -1 ? (
-          <div className="step-details">
+          <div className="step-details step-details-animated" key="init">
             <p><strong>Initialisation</strong></p>
             <p>Nous commençons avec la valeur initiale :</p>
             <div className="math-block">
@@ -154,7 +154,7 @@ export default function NewtonVisualizer() {
             <p>Cliquez sur "Suivant" pour calculer la première itération de la méthode de Newton.</p>
           </div>
         ) : (
-          <div className="step-details">
+          <div className="step-details step-details-animated" key={`step-${currentStep?.n}`}>
             <p><strong>Itération n = {currentStep?.n}</strong></p>
             
             {currentStep?.isDivergent ? (
