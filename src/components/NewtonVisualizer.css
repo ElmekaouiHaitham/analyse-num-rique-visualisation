@@ -1,0 +1,134 @@
+.newton-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+@media (max-width: 900px) {
+  .newton-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.controls {
+  padding: 1.5rem;
+}
+
+.control-row {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 150px;
+}
+
+.control-group label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--purple-dark);
+}
+
+.control-group input {
+  padding: 0.75rem;
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.action-buttons button {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  font-size: 1rem;
+  transition: opacity 0.2s;
+}
+
+.action-buttons button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: var(--purple-dark);
+  color: white;
+}
+
+.btn-secondary {
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.right-panel {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-panel h3 {
+  color: var(--purple-dark);
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--purple-light);
+  padding-bottom: 0.5rem;
+}
+
+.step-details {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.step-details ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.step-details li {
+  background: var(--purple-light);
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  border-left: 4px solid var(--purple-dark);
+}
+
+.math-block {
+  background: #f3f4f6;
+  padding: 1rem;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 1.1rem;
+  margin: 1rem 0;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+.success-message {
+  background: #dcfce7;
+  color: #166534;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #bbf7d0;
+  margin-top: 1rem;
+}

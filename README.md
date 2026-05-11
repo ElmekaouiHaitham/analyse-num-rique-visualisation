@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Analyse Numérique : Méthode de Newton-Raphson
 
-## Getting Started
+Une application web interactive et éducative permettant de visualiser la méthode de Newton-Raphson pour trouver numériquement les racines d'une équation. Développée avec Next.js et React, avec un moteur graphique performant sur-mesure utilisant l'API Canvas HTML5.
 
-First, run the development server:
+## Fonctionnalités
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+*   **Visualisation Graphique Interactive** : Un graphique complet développé avec HTML5 Canvas, supportant le zoom (molette de la souris) centré sur le curseur et le déplacement (cliquer-glisser) fluide, avec une grille adaptative.
+*   **Algorithme Pas-à-Pas** : Suivez l'exécution de l'algorithme de Newton itération par itération en utilisant les boutons "Suivant" et "Précédent". L'application trace la courbe, le point actuel, et la droite tangente menant à la prochaine itération.
+*   **Calculs Détaillés en Temps Réel** : Visualisez les formules exactes et les valeurs calculées à chaque étape ($x_n$, $f(x_n)$, $f'(x_n)$, $x_{n+1}$ et l'erreur relative).
+*   **Dérivation Numérique Haute Précision** : L'application utilise une méthode de différenciation numérique ultra-précise ($h = 10^{-7}$) pour calculer les dérivées à la volée, éliminant ainsi le besoin pour l'utilisateur de saisir manuellement les dérivées.
+*   **Design Éducatif** : Interface inspirée des supports de cours universitaires de mathématiques, intégrant la présentation claire du théorème de convergence.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Technologies Utilisées
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+*   **Framework** : Next.js (App Router)
+*   **Langage** : TypeScript
+*   **Style** : Vanilla CSS (sans framework) avec un thème "Light/Dark Purple" personnalisé.
+*   **Rendu Graphique** : HTML5 `<canvas>` (sans aucune bibliothèque externe de graphiques).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Installation et Utilisation
 
-## Learn More
+1.  **Cloner le dépôt :**
+    ```bash
+    git clone https://github.com/ElmekaouiHaitham/analyse-num-rique-visualisation.git
+    cd analyse-num-rique-visualisation
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+2.  **Installer les dépendances :**
+    ```bash
+    npm install
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3.  **Lancer le serveur de développement :**
+    ```bash
+    npm run dev
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4.  **Accéder à l'application :**
+    Ouvrez `http://localhost:3000` (ou le port indiqué par la console) dans votre navigateur web.
 
-## Deploy on Vercel
+## Utilisation de l'outil
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*   **Fonction $f(x)$** : Entrez n'importe quelle expression mathématique valide en JavaScript (ex: `Math.sin(x) * x`, `Math.pow(x, 2) - 2`, `Math.exp(x) - 5`).
+*   **Point de départ ($x_0$)** : Choisissez votre estimation initiale.
+*   **Tolérance** : La condition d'arrêt basée sur l'erreur relative entre deux itérations consécutives.
+*   **Contrôles du graphique** :
+    *   **Scroll** : Zoomer/Dézoomer.
+    *   **Drag & Drop** : Se déplacer librement.
+    *   **Bouton "Recentrer la vue"** : Ramène le focus visuel sur l'itération en cours d'analyse.
